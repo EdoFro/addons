@@ -132,6 +132,48 @@ private updateBinaries(Proxy.Node root, String nodeName) {
     return count
 }
 
+// added by gpapp
+int updateTranslations(Proxy.Node root) {
+    int filesAdded = 0
+    def nodeName = 'translations'
+    Proxy.Node parentNode = root.children.find { it.plainText.matches(nodeName) }
+    if (!parentNode) {
+        errors << "The root node ${root.plainText} has no '$nodeName' child. Please create it or better run 'Check Add-on'"
+        return filesAdded
+    }
+    def dir = new File(root.map.file.parent, nodeName)
+    if (dir.isDirectory()) {
+        // remove all existing translations
+        parentNode.children.each {
+            it.delete()
+        }
+        // create nodes for each translation
+        dir.eachFileRecurse { File file ->
+            if (!file.isFile() || !file.name.endsWith('.properties')) {
+                return
+            }
+            def language = file.name.replace('.properties', '')
+            println "adding translation $language"
+            Proxy.Node langNode = parentNode.createChild(language)
+            if (file.isFile()) {
+                Properties properties = new Properties()
+                file.withInputStream {
+                    InputStream it ->
+                        properties.load(it.newReader('UTF-8'))
+                }
+                properties.each {
+                    key, value ->
+                        langNode[key] = value
+                }
+                langNode.attributes.optimizeWidths()
+            }
+            ++filesAdded
+        }
+    }
+    return filesAdded
+}
+
+
 // for topDir='/a/b/c' creates a zip file whose entries' path will start with 'c/'
 byte[] getZipBytes(File topDir) {
     def byteArrayOutputStream = new ByteArrayOutputStream()
@@ -262,6 +304,7 @@ try {
     counts.zips = updateZips(releaseMapRoot)
     counts.images = updateImages(releaseMapRoot)
     counts.lib = updateLib(releaseMapRoot)
+    counts.translations = updateTranslations(releaseMapRoot)     // added by gpapp
     createLatestVersionFile(releaseMapRoot)
 } catch (Exception e) {
     errors << e.message
@@ -278,7 +321,9 @@ else {
     logger.info("Successfully created $releaseMapFile with ${counts.scripts} script(s), ${counts.images} images(s), ${counts.zips} zip and ${counts.lib} lib file(s)")
     if (isInteractive()) {
         def question = """Successfully created add-on
-with ${counts.scripts} script(s), ${counts.images} images(s), ${counts.zips} zip and ${counts.lib} lib file(s).
+with ${counts.scripts} script(s), ${counts.images} images(s), ${counts.zips} zip and ${counts.lib} lib file(s) and ${
+            counts.translations
+        } translations.
 
 Also created: 'version.properties' - upload this file to the configured updateUrl!
 
