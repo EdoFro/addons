@@ -251,10 +251,11 @@ private createLatestVersionFile(Proxy.Node releaseMapRoot) {
     def version = releaseMapRoot['version']
     def freeplaneVersionFrom = releaseMapRoot['freeplaneVersionFrom']
     def homepage = toUrl(releaseMapRoot, releaseMapRoot.link.text)
+    def downloadPage = toUrl(releaseMapRoot, releaseMapRoot['downloadUrl'].toString()) ?: homepage
     def releaseMapFileName = new File(mapFile.path.replaceFirst("(\\.addon)?\\.mm", "") + "-${version}.addon.mm").name
-    def downloadFile = new File(homepage.path, releaseMapFileName)
+    def downloadFile = new File(downloadPage.path, releaseMapFileName)
     def downloadFilePath = downloadFile.path.replace(File.separator, '/')
-    def downloadUrl = new URL(homepage.protocol, homepage.host, homepage.port, downloadFilePath)
+    def downloadUrl  = new URL(downloadPage.protocol, downloadPage.host, downloadPage.port, downloadFilePath)
     file.text = """version=${version}
 downloadUrl=${downloadUrl}
 freeplaneVersionFrom=${freeplaneVersionFrom}
@@ -262,7 +263,19 @@ freeplaneVersionFrom=${freeplaneVersionFrom}
 }
 
 private URL toUrl(Proxy.Node root, String urlString) {
-    return urlString == null ? null : new URL(expand(root, urlString))
+    if (urlString == null)
+        return null
+    def url = expand(root, urlString)
+    return isUrl(url)? new URL(url) : null
+}
+
+private boolean isUrl(String urlString){
+    try{
+        urlString.toURL()
+        return true
+    } catch(e){
+        return false
+    }    
 }
 
 private String shorten(Collection<String> strings, int entrysize) {
@@ -292,6 +305,11 @@ if (!node.map.root.link.text) {
 }
 if (!node.map.isSaved() && !saveOrCancel())
     return
+def downloadUrl = node.map.root['downloadUrl'] ? expand(node.map.root, node.map.root['downloadUrl'].toString()) : null
+if (downloadUrl && !isUrl(downloadUrl)){
+    ui.errorMessage("downloadUrl is not valid - can't continue.")
+    return
+}
 
 def releaseMapFile = new File(mapFile.path.replaceFirst("(\\.addon)?\\.mm", "") + "-${version}.addon.mm")
 MapModel releaseMap = createReleaseMap(node)
