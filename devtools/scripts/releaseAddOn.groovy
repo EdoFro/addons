@@ -39,6 +39,7 @@ dialogTitle = 'Create release package'
 def expand(Proxy.Node attributeNode, String string) {
     // expands strings like "${name}.groovy"
     string.replaceAll(/\$\{([^}]+)\}/, { match, key -> def v = attributeNode.attributes.map[key]; v ? v : match})
+          .replaceAll(/\$\{([^}]+)\}/, { match, key -> key == 'homepage' ? attributeNode.link.text?: match : match })
 }
 
 // returns the count of scripts added
