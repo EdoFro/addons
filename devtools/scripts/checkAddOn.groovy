@@ -171,6 +171,12 @@ root.note = withBody '''
         &quot;${homepage}/version.properties&quot;
       </li>
       <li>
+        addonsMenu: Defines the addon's main menu location, defaults menu 
+        'main_menu_scripting'.<br>Use developer tool menuItemInfo to inspect 
+        menu location keys.<br>This attribute is mandatory.<br>Example: 
+        '/menu_bar/myAddons'
+      </li>
+      <li>
         downloadUrl: URL from the place where the AddOn file will be available 
         for downloading.<br>By default is the same as the homepage.<br>You can 
         define a different place or a subfolder of the homepage.<br>Example: 
@@ -190,6 +196,7 @@ createMissingAttributes(root, [
     'updateUrl',
     'downloadUrl',
     'changelogUrl',
+    ['addonsMenu',	'main_menu_scripting']
 ])
 
 //
@@ -467,7 +474,7 @@ scriptsNode.children.each {
     def menuTitleKey = existingMenuTitleKey ?: "addons.\${name}.${scriptBaseName}"
     createMissingAttributes(it, [
         [ 'menuTitleKey', menuTitleKey ]
-        , ['menuLocation', 'main_menu_scripting/addons.\${name}']
+        , ['menuLocation', '\${addonsMenu}/addons.\${name}']
         , ['executionMode', 'on_single_node']
         , 'keyboardShortcut'
         , ['execute_scripts_without_asking', 'true']
