@@ -166,8 +166,9 @@ root.note = withBody '''
         too new.
       </li>
       <li>
-        updateUrl: URL of the file containing information (version, download url) on
-        the latest version of this add-on. By default: "${homepage}/version.properties"
+        updateUrl: URL of the file containing information (version, download 
+        url) on the latest version of this add-on. By default: 
+        &quot;${homepage}/version.properties&quot;
       </li>
       <li>
         downloadUrl: URL from the place where the AddOn file will be available 
@@ -186,9 +187,9 @@ createMissingAttributes(root, [
     'author',
     'freeplaneVersionFrom',
     'freeplaneVersionTo',
-    'updateUrl'
     'updateUrl',
     'downloadUrl',
+    'changelogUrl',
 ])
 
 //

@@ -325,6 +325,7 @@ try {
     counts.lib = updateLib(releaseMapRoot)
     counts.translations = updateTranslations(releaseMapRoot)     // added by gpapp
     createLatestVersionFile(releaseMapRoot)
+    releaseMapRoot['updateUrl'] = toUrl(releaseMapRoot, releaseMapRoot['updateUrl'].toString()) ?: releaseMapRoot['updateUrl']
 } catch (Exception e) {
     errors << e.message
     e.printStackTrace()
